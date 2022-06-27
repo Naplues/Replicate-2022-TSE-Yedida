@@ -30,61 +30,61 @@ import lime.lime_tabular
 from lime import submodular_pick
 import shap
 
-
-
 """ NOTES:
       - requires Python 3.0 or greater
       - order of the original lists is not preserved
 """
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def main(path, stop_at, clf, interesting_path, seed=0):
+    train_x, train_y, test_x, test_y, train_canonical_ids, test_canonical_ids = \
+        cleaning.data_clean(path, [interesting_path], seed)
 
-    training_x, training_y, testset_x, testset_y, training_canonical_ids, testing_canonical_ids = cleaning.data_clean(path, [interesting_path], seed)
+    print("train_x:", train_x.shape)
+    print("train_y:", len(train_y))
+    print("test_x:", test_x.shape)
+    print("test_y:", len(test_y))
 
-    print("training_x:", training_x.shape)
-    print("training_y:", len(training_y))
-    print("testset_x:", testset_x.shape)
-    print("testset_y:", len(testset_y))
+    train_x.to_csv(path + "training_x.csv")
+    test_x.to_csv(path + "testset_x.csv")
 
-    training_x.to_csv(path + "training_x.csv")
-    testset_x.to_csv(path + "testset_x.csv")
-    
-    clf.fit(training_x, training_y)
-    y_pred = clf.predict(testset_x)
+    clf.fit(train_x, train_y)
+    y_pred = clf.predict(test_x)
 
-    print(metrics.classification_report(testset_y, y_pred))
-    print("accuracy:", metrics.accuracy_score(testset_y, y_pred))
-    
+    print(metrics.classification_report(test_y, y_pred))
+    print("accuracy:", metrics.accuracy_score(test_y, y_pred))
+
     try:
-        f1_score_pos = metrics.f1_score(testset_y, y_pred, average=None)[1]   # get the f1-score for the positive class only
-        print(metrics.f1_score(testset_y, y_pred, average=None)[1])
-        tn, fp, fn, tp = metrics.confusion_matrix(testset_y, y_pred).ravel()
+        f1_score_pos = metrics.f1_score(test_y, y_pred, average=None)[
+            1]  # get the f1-score for the positive class only
+        print(metrics.f1_score(test_y, y_pred, average=None)[1])
+        tn, fp, fn, tp = metrics.confusion_matrix(test_y, y_pred).ravel()
         print("@@@ tn: {}, fp: {}, fn: {}, tp: {}".format(tn, fp, fn, tp))
     except IndexError:
         # this error must have meant that f1_score(...) returned only 1 value (f1 of negative class)
         # this occurs on the 2018 data on jmeter
-        if metrics.f1_score(testset_y, y_pred, average=None)[0] != 1:
+        if metrics.f1_score(test_y, y_pred, average=None)[0] != 1:
             raise Exception('odd')
-        print(metrics.f1_score(testset_y, y_pred, average=None))
+        print(metrics.f1_score(test_y, y_pred, average=None))
         f1_score_pos = 0
         tn = 0
         tp = 0
         fn = 0
         tp = 0
 
-    
-
     print("@@@ LIME - Creating explainer", flush=True)
-    feature_names =  training_x.columns.values.tolist()
-    explainer = lime.lime_tabular.LimeTabularExplainer(np.asarray(training_x), feature_names=feature_names, discretize_continuous=True)
+    feature_names = train_x.columns.values.tolist()
+    explainer = lime.lime_tabular.LimeTabularExplainer(np.asarray(train_x), feature_names=feature_names,
+                                                       discretize_continuous=True)
 
     print("@@@ LIME - Random Sampling of Instances", flush=True)
     Path(path + "lime-random/").mkdir(parents=True, exist_ok=True)
     for iter in range(25):
-        sample_no = np.random.randint(0, testset_x.shape[0])
-        print("iter: %d, sample_no: %d, actual label: %s, predicted: %s" % (iter, sample_no, testset_y[sample_no], y_pred[sample_no]))
-        exp = explainer.explain_instance(testset_x.iloc[sample_no], clf.predict_proba, num_features=10)
+        sample_no = np.random.randint(0, test_x.shape[0])
+        print("iter: %d, sample_no: %d, actual label: %s, predicted: %s" % (
+            iter, sample_no, test_y[sample_no], y_pred[sample_no]))
+        exp = explainer.explain_instance(test_x.iloc[sample_no], clf.predict_proba, num_features=10)
         exp.save_to_file(path + "lime-random/" + 'lime_random_' + str(iter) + '.html')
 
     # print("@@@ LIME - Submodular Pick", flush=True)
@@ -104,7 +104,7 @@ def main(path, stop_at, clf, interesting_path, seed=0):
     #     print("iter: %d, sample_no: %d, actual label: %s, predicted: %s" % (iter, sample_no, testset_y[sample_no], y_pred[sample_no]), flush=True)
     #     exp = explainer.explain_instance(testset_x.iloc[sample_no], clf.predict_proba, num_features=10)
 
-        # exp.save_to_file(path + "lime-differs/" + 'lime_differs_' + str(iter) +  '__' + str(testing_canonical_ids.iloc[sample_no]) + '__' + str(testset_y[sample_no]) + "__"  + str(y_pred[sample_no]) + '.html')
+    # exp.save_to_file(path + "lime-differs/" + 'lime_differs_' + str(iter) +  '__' + str(testing_canonical_ids.iloc[sample_no]) + '__' + str(testset_y[sample_no]) + "__"  + str(y_pred[sample_no]) + '.html')
 
     # print("@@@ SHAP - Creating explainer", flush=True)
     # shap_explainer = shap.KernelExplainer(clf.predict_proba, training_x.sample(200))
@@ -119,13 +119,12 @@ def main(path, stop_at, clf, interesting_path, seed=0):
     # fig = shap.summary_plot(shap_values, training_x, show=False)
     # plt.savefig(path + 'shap_summary.png')
 
-    
     # pos_at = list(clf.classes_).index("yes")
     pos_at = list(clf.classes_).index(1)
 
-    prob = clf.predict_proba(testset_x)[:, pos_at]
+    prob = clf.predict_proba(test_x)[:, pos_at]
 
-    auc = metrics.roc_auc_score(testset_y, prob)
+    auc = metrics.roc_auc_score(test_y, prob)
 
     # metrics.plot_roc_curve(clf, testset_x, testset_y)   
     # plt.show()  
@@ -138,20 +137,20 @@ def main(path, stop_at, clf, interesting_path, seed=0):
     sorted_label = []
     order = np.argsort(prob)[::-1][:]  # numpy.ndarray
     # pos_all = sum([1 for label_real in testset_y if label_real == "yes"])
-    pos_all = sum([1 for label_real in testset_y if label_real == 1])
-    num_all = sum([1 for label_real in testset_y])
+    pos_all = sum([1 for label_real in test_y if label_real == 1])
+    num_all = sum([1 for label_real in test_y])
     print("number of samples:", num_all)
     total_recall = []
     length = []
     for i in order:
-        a = testset_y[i]  # real label
+        a = test_y[i]  # real label
         sorted_label.append(a)
         # pos_get = sum([1 for label_real in sorted_label if label_real == "yes"])
         pos_get = sum([1 for label_real in sorted_label if label_real == 1])
         length.append(len(sorted_label) / num_all)
         total_recall.append(pos_get / pos_all)
         # print(pos_get, len(sorted_label))
-# ######
+    # ######
     total_recall = total_recall[::10]
     rate = length[::10]
     # append(1) in case that list out of range
@@ -174,7 +173,6 @@ def main(path, stop_at, clf, interesting_path, seed=0):
 
 
 if __name__ == "__main__":
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     clf1 = svm.SVC(kernel='linear', probability=True, class_weight='balanced')
     clf2 = RandomForestClassifier()
@@ -182,7 +180,7 @@ if __name__ == "__main__":
     clf4 = DummyClassifier(strategy="stratified")
     clf5 = DummyClassifier(strategy="constant", constant=1)
 
-    clf_list = [clf1] # , clf2, clf3]
+    clf_list = [clf1]  # , clf2, clf3]
     if 'DUMMY' in os.environ and (os.environ["DUMMY"].startswith('T') or os.environ["DUMMY"].startswith('t')):
         clf_list = [clf4]
     if 'DUMMY' in os.environ and (os.environ["DUMMY"].startswith('constant')):
@@ -191,7 +189,7 @@ if __name__ == "__main__":
         nn = KNeighborsClassifier(n_neighbors=1)
         clf_list = [nn]
     elif 'NN' in os.environ:
-        nn = KNeighborsClassifier(n_neighbors=int(os.environ["NN"] ))
+        nn = KNeighborsClassifier(n_neighbors=int(os.environ["NN"]))
         clf_list = [nn]
     stopats = [1]
 
@@ -209,12 +207,12 @@ if __name__ == "__main__":
                 AUC = []
                 cost = []
                 f1_pos_list = []
-                
+
                 repeated_times = 10
-                for i in range(1, 1+repeated_times):
+                for i in range(1, 1 + repeated_times):
                     print("@@@ C - Repeat number:", i, flush=True)
                     rate, auc, f1_pos, tn, fp, fn, tp = main(path, stop_at=stopat_id,
-                                        seed=42 + i, clf=clf, interesting_path=argv )
+                                                             seed=42 + i, clf=clf, interesting_path=argv)
                     AUC.append(auc)
                     cost.append(rate)
                     f1_pos_list.append(f1_pos)
@@ -249,4 +247,3 @@ if __name__ == "__main__":
     # final_r = total_tp / (total_tp + total_fn)
     # print('r=', final_r)
     # print('f=', 2 * final_p * final_r / (final_p + final_r))
-

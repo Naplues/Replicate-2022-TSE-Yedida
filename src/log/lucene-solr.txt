@@ -1,0 +1,63 @@
+Run # 0
+======
+setting: normalizeg|rf
+iter 0 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: standardizeL|rf
+iter 1 : [0.5, 0.5, 0.0, 1.0, 0.75]
+setting: standardizet|rf
+iter 2 : [0.25, 0.25, 0.0, 1.0, 0.625]
+setting: normalizeM|rf
+iter 3 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: standardizeu|rf
+iter 4 : [0.25, 0.75, 0.5, 0.75, 0.625]
+setting: minmaxm|rf
+iter 5 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxR|rf
+iter 6 : [0.25, 0.75, 0.5, 0.75, 0.625]
+setting: minmaxA|rf
+iter 7 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: standardizeA|rf
+iter 8 : [0.25, 0.75, 0.5, 0.75, 0.625]
+setting: standardizee|rf
+iter 9 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+setting: minmaxe|rf
+iter 10 : [0.5, 0.5, 0.0, 1.0, 0.75]
+setting: maxabsw|rf
+iter 11 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxD|rf
+iter 12 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxY|rf
+iter 13 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxf|rf
+iter 14 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: normalizes|rf
+iter 15 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+setting: normalizeb|rf
+iter 16 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+setting: maxabsy|rf
+iter 17 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: standardizeE|rf
+iter 18 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+setting: normalizeZ|rf
+iter 19 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: normalizeL|rf
+iter 20 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxr|rf
+iter 21 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: standardizem|rf
+iter 22 : [0.0, 0.5, 0.5, 0.6666666666666666, 0.5]
+setting: maxabsR|rf
+iter 23 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+setting: minmaxg|rf
+iter 24 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxo|rf
+iter 25 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxS|rf
+iter 26 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: minmaxQ|rf
+iter 27 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+setting: minmaxl|rf
+iter 28 : [0.0, 0.0, 0.0, 0.0, 0.5]
+setting: maxabsp|rf
+iter 29 : [0.0, 1.0, 1.0, 0.6666666666666666, 0.5]
+{0: [0.0], 1: [0.5], 2: [0.5], 3: [0.5], 4: [0.5], 5: [0.5], 6: [0.5], 7: [0.5], 8: [0.5], 9: [0.5], 10: [0.5], 11: [0.5], 12: [0.5], 13: [0.5], 14: [0.5], 15: [0.5], 16: [0.5], 17: [0.5], 18: [0.5], 19: [0.5], 20: [0.5], 21: [0.5], 22: [0.5], 23: [0.5], 24: [0.5], 25: [0.5], 26: [0.5], 27: [0.5], 28: [0.5], 29: [0.5], 'settings': {0: ['normalizeg|rf'], 1: ['standardizeL|rf'], 2: ['standardizet|rf'], 3: ['normalizeM|rf'], 4: ['standardizeu|rf'], 5: ['minmaxm|rf'], 6: ['minmaxR|rf'], 7: ['minmaxA|rf'], 8: ['standardizeA|rf'], 9: ['standardizee|rf'], 10: ['minmaxe|rf'], 11: ['maxabsw|rf'], 12: ['minmaxD|rf'], 13: ['minmaxY|rf'], 14: ['minmaxf|rf'], 15: ['normalizes|rf'], 16: ['normalizeb|rf'], 17: ['maxabsy|rf'], 18: ['standardizeE|rf'], 19: ['normalizeZ|rf'], 20: ['normalizeL|rf'], 21: ['minmaxr|rf'], 22: ['standardizem|rf'], 23: ['maxabsR|rf'], 24: ['minmaxg|rf'], 25: ['minmaxo|rf'], 26: ['minmaxS|rf'], 27: ['minmaxQ|rf'], 28: ['minmaxl|rf'], 29: ['maxabsp|rf']}}

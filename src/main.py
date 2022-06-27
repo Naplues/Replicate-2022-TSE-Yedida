@@ -3,7 +3,6 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 from glob import glob
-from ivis import Ivis
 from ghost import BinaryGHOST
 from raise_utils.learners import *
 from sklearn.svm import SVC

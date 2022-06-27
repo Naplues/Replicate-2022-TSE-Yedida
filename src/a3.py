@@ -1,25 +1,22 @@
-import os
-import tensorflow as tf
+import os, warnings
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 import numpy as np
 import pandas as pd
-from glob import glob
-from ivis import Ivis
-from ghost import BinaryGHOST
+
 from raise_utils.learners import FeedforwardDL
-from raise_utils.hyperparams import DODGE
 from raise_utils.transforms import Transform
-from raise_utils.data import DataLoader, Data
+from raise_utils.data import Data
 from raise_utils.metrics import ClassificationMetrics
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import pairwise_distances
+
 from scipy.stats import mode
 from scipy.spatial import KDTree
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
 base_path = '../data/reimplemented_2016_manual/'
-datasets = ['ant', 'cassandra', 'commons', 'derby',
-            'jmeter', 'lucene-solr', 'maven',  'tomcat']
+datasets = ['ant', 'cassandra', 'commons', 'derby', 'jmeter', 'lucene-solr', 'maven', 'tomcat']
 
 
 def remove_labels(data):
@@ -30,20 +27,18 @@ def remove_labels(data):
     # "Remove" labels
     # lost_idx = np.random.choice(
     #    len(data.y_train), size=int(len(data.y_train) - np.sqrt(len(data.y_train))))
-    lost_idx = np.random.choice(
-        len(data.y_train), size=int(len(data.y_train) - np.sqrt(len(data.y_train))), replace=False)
+    lost_idx = np.random.choice(len(data.y_train), size=int(len(data.y_train) - np.sqrt(len(data.y_train))),
+                                replace=False)
     X_lost = data.x_train[lost_idx]
     X_rest = np.delete(data.x_train, lost_idx, axis=0)
     y_lost = data.y_train[lost_idx]
     y_rest = np.delete(data.y_train, lost_idx, axis=0)
 
-    print('Train set labeled:', len(y_rest))
-    print('Train set:', len(y_lost))
-
-    if len(X_lost.shape) == 1:
-        X_lost = X_lost.reshape(1, -1)
-    if len(X_rest.shape) == 1:
-        X_rest = X_rest.reshape(1, -1)
+    print('Train set:', len(y_lost), 'Labeled:', len(y_rest), 'Total =', len(X_lost) + len(X_rest), 'Ratio =',
+          round(len(X_rest) / len(data.y_train), 2))
+    print('Test  set:', len(data.y_test))
+    X_lost = X_lost.reshape(1, -1) if len(X_lost.shape) == 1 else X_lost
+    X_rest = X_rest.reshape(1, -1) if len(X_rest.shape) == 1 else X_rest
 
     # Impute data
     for i in range(len(X_lost)):
@@ -51,24 +46,18 @@ def remove_labels(data):
         d, idx = tree.query([X_lost[i]], k=int(np.sqrt(len(X_rest))), p=1)
         y_lost[i] = mode(y_rest[idx][0])[0][0]
 
-    print('Ratio =', round(len(X_rest) / len(data.y_train), 2))
-    print('Total =', len(X_lost) + len(X_rest))
     data.x_train = np.concatenate((X_lost, X_rest), axis=0)
     data.y_train = np.concatenate((y_lost, y_rest), axis=0)
+
     return data, 0.8 * len(X_rest) / (len(X_rest) + len(X_lost))
 
 
-results = []
-ratios = []
+results, ratios = [], []
 for dataset in datasets:
-    print(dataset)
-    print('=' * len(dataset))
+    print((dataset + '=' * 60)[:60])
 
-    train_file = base_path + 'train/' + dataset + '_B_features.csv'
-    test_file = base_path + 'test/' + dataset + '_C_features.csv'
-
-    train_df = pd.read_csv(train_file)
-    test_df = pd.read_csv(test_file)
+    train_df = pd.read_csv(rf'{base_path}train/{dataset}_B_features.csv')
+    test_df = pd.read_csv(rf'{base_path}test/{dataset}_C_features.csv')
 
     df = pd.concat((train_df, test_df), join='inner')
 
@@ -78,18 +67,14 @@ for dataset in datasets:
     y[y == 'close'] = 1
     y[y == 'open'] = 0
 
+    X = X.select_dtypes(exclude=['object']).astype(np.float32)
     y = np.array(y, dtype=np.float32)
 
-    X = X.select_dtypes(
-        exclude=['object']).astype(np.float32)
-
-    data = Data(
-        *train_test_split(X, y, test_size=.2 if dataset != 'maven' else .5, shuffle=False))
+    data = Data(*train_test_split(X, y, test_size=.2 if dataset != 'maven' else .5, shuffle=False))
 
     data.x_train = np.array(data.x_train)
     data.y_train = np.array(data.y_train)
     data, ratio = remove_labels(data)
-    print('Test set:', len(data.y_test))
     ratios.append(ratio)
 
     try:
@@ -114,5 +99,5 @@ for dataset in datasets:
         pass
 
 results = np.array(results)
-print(np.median(results, axis=0))
-print(np.median(ratios))
+print('median result: ', np.median(results, axis=0))
+print('median ratios: ', np.median(ratios))

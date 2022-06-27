@@ -13,8 +13,7 @@ for kind in kinds:
     for file in os.listdir('./log/' + kind + '_train_sampled'):
         try:
             path = './log/' + kind + '_train_sampled/' + file
-            interp = DODGEInterpreter(
-                files=[path], n_iters=10, metrics=metrics)
+            interp = DODGEInterpreter(files=[path], n_iters=10, metrics=metrics)
             results = interp.interpret()[file]
 
             for metric in metrics:
@@ -24,5 +23,4 @@ for kind in kinds:
 
     for k, v in result.items():
         print(k + ':', np.median(v))
-
     print()

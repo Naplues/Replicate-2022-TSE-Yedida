@@ -1,16 +1,12 @@
 import os
-import tensorflow as tf
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
 import numpy as np
 import pandas as pd
-from glob import glob
-from ivis import Ivis
+
 from ghost import BinaryGHOST
-from raise_utils.learners import *
-from sklearn.svm import SVC
-from raise_utils.hyperparams import DODGE
-from raise_utils.transforms import Transform
-from raise_utils.data import DataLoader, Data
-from raise_utils.metrics import ClassificationMetrics
+
+from raise_utils.data import Data
 from sklearn.model_selection import train_test_split
 from scipy.stats import mode
 from scipy.spatial import KDTree
@@ -56,14 +52,10 @@ datasets = ['ant', 'cassandra', 'commons', 'derby',
             'jmeter', 'lucene-solr', 'maven', 'tomcat']
 
 for dataset in datasets:
-    print(dataset)
-    print('=' * len(dataset))
+    print((dataset + '=' * 60)[:60])
 
-    train_file = base_path + 'train/' + dataset + '_B_features.csv'
-    test_file = base_path + 'test/' + dataset + '_C_features.csv'
-
-    train_df = pd.read_csv(train_file)
-    test_df = pd.read_csv(test_file)
+    train_df = pd.read_csv(rf'{base_path}train/{dataset}_B_features.csv')
+    test_df = pd.read_csv(rf'{base_path}test/{dataset}_C_features.csv')
 
     df = pd.concat((train_df, test_df), join='inner')
 
@@ -75,8 +67,7 @@ for dataset in datasets:
 
     y = np.array(y, dtype=np.float32)
 
-    X = X.select_dtypes(
-        exclude=['object']).astype(np.float32)
+    X = X.select_dtypes(exclude=['object']).astype(np.float32)
 
     if dataset == 'maven':
         data = Data(*train_test_split(X, y, test_size=.5, shuffle=False))
@@ -84,9 +75,8 @@ for dataset in datasets:
         data = Data(*train_test_split(X, y, test_size=.2, shuffle=False))
     data.x_train = np.array(data.x_train)
     data.y_train = np.array(data.y_train)
-    #data, ratio = remove_labels(data)
+    # data, ratio = remove_labels(data)
 
-    ghost = BinaryGHOST(['pd-pf', 'pd', 'pf',
-                         'prec', 'auc'], smote=True, autoencode=False,  name=dataset)
+    ghost = BinaryGHOST(['pd-pf', 'pd', 'pf', 'prec', 'auc'], smote=True, autoencode=False, name=dataset)
     ghost.set_data(*data)
     ghost.fit()

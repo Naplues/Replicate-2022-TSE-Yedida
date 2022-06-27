@@ -8,6 +8,7 @@ from IPython import embed
 import sys
 import os
 
+
 def read_training_testing_files(path):
     trainingFiles = glob.glob(path + "/train/*.csv")
     testingFiles = glob.glob(path + "/test/*.csv")
@@ -55,9 +56,10 @@ def common_get(list_header):
     """
 
     golden_fea_drop_leak = ["F123", "F105", "F68", "F101", "F104", "F65", "F22",
-                  " F94", "F71", "F72", "F25", "F3-", "F15", "F126", "F41", "F77"]  # removed leaked features
-    golden_fea_reimplement_leak = ["F116", "F115", "F117", "F120", "F123", "F110", "F105", "F68", "F101", "F104", "F65", "F22",
-                  " F94", "F71", "F72", "F25", "F3-", "F15", "F126", "F41", "F77"]
+                            " F94", "F71", "F72", "F25", "F3-", "F15", "F126", "F41", "F77"]  # removed leaked features
+    golden_fea_reimplement_leak = ["F116", "F115", "F117", "F120", "F123", "F110", "F105", "F68", "F101", "F104", "F65",
+                                   "F22",
+                                   " F94", "F71", "F72", "F25", "F3-", "F15", "F126", "F41", "F77"]
     # golden_fea_and_semantic = ["F123", "F105", "F68", "F101", "F104", "F65", "F22",
     #               " F94", "F71", "F72", "F25", "F3-", "F15", "F126", "F41", "F77", 
     #               'pattern_0', 'pattern_1', 'pattern_2', 'pattern_3', 'pattern_4', 'pattern_5', 'pattern_6', 'pattern_7', 'pattern_8', 'pattern_9' ,'pattern_10'
@@ -72,22 +74,19 @@ def common_get(list_header):
     #               ] 
     # only_semantic = ['pattern_0', 'pattern_1', 'pattern_2', 'pattern_3', 'pattern_4', 'pattern_5', 'pattern_6', 'pattern_7', 
     # # 'pattern_8', 'pattern_9' ,'pattern_10'
-                  # 'pattern_11', 'pattern_12', 'pattern_13', 'pattern_14', 'pattern_15', 'pattern_16', 'pattern_17', 'pattern_18', 'pattern_19'
-                  # ]
+    # 'pattern_11', 'pattern_12', 'pattern_13', 'pattern_14', 'pattern_15', 'pattern_16', 'pattern_17', 'pattern_18', 'pattern_19'
+    # ]
 
-   
-
-    
     features_to_use = golden_fea_reimplement_leak
 
     if 'DROP' in os.environ and os.environ['DROP'] in ['true', 'TRUE', 'True']:
         print('will not use leaked features')
-        features_to_use =golden_fea_drop_leak
+        features_to_use = golden_fea_drop_leak
         # features_to_use.remove('F22')
     if 'ONLY_LEAKED' in os.environ and os.environ['ONLY_LEAKED'] in ['true', 'TRUE', 'True']:
         features_to_use = ["F116", "F115", "F117", "F120", 'F110']
     # features_to_use.remove('F15')
-    
+
     golden_list = []
     count_list = []
     for header in list_header:
@@ -100,8 +99,7 @@ def common_get(list_header):
         count_list.append(count)
         golden_list.append(golden)
 
-
-    common = set(golden_list[0]) 
+    common = set(golden_list[0])
     for s in golden_list[1:]:
         common.intersection_update(s)
 
@@ -173,8 +171,8 @@ def is_number(df):
             position += 1
     return index
 
+
 def read_interesting_clazz_and_bug_patterns(filepaths):
-    
     interestings = []
     for filepath in filepaths:
         with open(filepath) as infile:
@@ -187,7 +185,7 @@ def read_interesting_clazz_and_bug_patterns(filepaths):
 
 
 def remove_uninteresting_bug_patterns(data, filepaths, is_training):
-    interestings =read_interesting_clazz_and_bug_patterns(filepaths)
+    interestings = read_interesting_clazz_and_bug_patterns(filepaths)
 
     for i in range(0, len(data)):
         # print("np.where(data[i].iloc[0] == 'F20')", np.where(data[i].iloc[0] == 'F20'))
@@ -207,14 +205,13 @@ def remove_uninteresting_bug_patterns(data, filepaths, is_training):
 
             canonical_id = data[i].iloc[j, 0]
             # print(canonical_id)
-            if  (clazz, bug_pattern, commit, canonical_id) not in interestings:
+            if (clazz, bug_pattern, commit, canonical_id) not in interestings:
                 print('to remove ', canonical_id)
-                
+
                 index.append(j)  # index is a list of index of samples to delete
 
         data[i] = data[i].drop(sorted(index, reverse=True))
 
-        
     return data
 
 
@@ -285,19 +282,18 @@ def one_hot(df, index_num):
     return df
 
 
-def data_clean(path, filepaths_to_interesting_cases, seed = 0):
+def data_clean(path, filepaths_to_interesting_cases, seed=0):
     list_training, list_testing, list_header = read_training_testing_files(path)
 
     if len(filepaths_to_interesting_cases) > 0 and filepaths_to_interesting_cases[0] != None:
-        interesting_training = remove_uninteresting_bug_patterns(list_training, filepaths_to_interesting_cases, is_training=True)
+        interesting_training = remove_uninteresting_bug_patterns(list_training, filepaths_to_interesting_cases,
+                                                                 is_training=True)
         # interesting_training = list_training
-        interesting_testing = remove_uninteresting_bug_patterns(list_testing, filepaths_to_interesting_cases, is_training=False)
-
+        interesting_testing = remove_uninteresting_bug_patterns(list_testing, filepaths_to_interesting_cases,
+                                                                is_training=False)
     else:
         interesting_training = list_training
         interesting_testing = list_testing
-
-   
 
     has_canonical_id = 'canonical_id' in list_header
 
@@ -316,11 +312,9 @@ def data_clean(path, filepaths_to_interesting_cases, seed = 0):
     testing_trim = trim(interesting_testing, common_header)
     testing_trim.to_csv(path + "testing_trim.csv")
 
-
     if has_canonical_id:
         training_canonical_ids = training_trim.iloc[:, 0]
         testing_canonical_ids = testing_trim.iloc[:, 0]
-
 
         print(training_canonical_ids[:5])
 
@@ -329,7 +323,6 @@ def data_clean(path, filepaths_to_interesting_cases, seed = 0):
     else:
         training_canonical_ids = None
         testing_canonical_ids = None
-
 
     # training set
     training_x = training_trim.iloc[:, :-1]
@@ -352,8 +345,8 @@ def data_clean(path, filepaths_to_interesting_cases, seed = 0):
 
     # testset_x = min_max_scaler.fit_transform(np.asarray(testset_x))
     # training_x = min_max_scaler.fit_transform(np.asarray(training_x))
-    testset_x = pd.DataFrame(scaler.fit_transform(testset_x), columns = testset_x.columns)
-    training_x = pd.DataFrame(scaler.fit_transform(training_x), columns = training_x.columns)
+    testset_x = pd.DataFrame(scaler.fit_transform(testset_x), columns=testset_x.columns)
+    training_x = pd.DataFrame(scaler.fit_transform(training_x), columns=training_x.columns)
     print(';.;')
     print(training_x[:3])
 
